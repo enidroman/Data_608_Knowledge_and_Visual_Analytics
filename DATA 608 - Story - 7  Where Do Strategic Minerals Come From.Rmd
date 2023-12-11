@@ -1,0 +1,102 @@
+---
+title: "DATA 608 - Story - 7 : Where Do Strategic Minerals Come From?"
+author: "Enid Roman"
+date: "2023-12-09"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+https://www.usgs.gov/news/national-news-release/us-geological-survey-releases-2022-list-critical-minerals
+https://www.visualcapitalist.com/the-50-minerals-critical-to-u-s-security/
+https://www.sciencebase.gov/catalog/item/61ead2cad34e8b818ad9f384
+https://pubs.usgs.gov/periodicals/mcs2022/mcs2022.pdf
+https://www.gao.gov/blog/critical-mineral-shortages-could-disrupt-global-supply-chains
+
+
+
+```{r}
+minerals = read.csv("https://raw.githubusercontent.com/enidroman/Data_608_Knowledge_and_Visual_Analytics/main/Mineral%20Commodity%20Summaries%202022.csv")
+minerals
+```
+
+```{r}
+colnames(minerals) <- c("Commodity", "Net import reliance as a percentage of apparent consumption", "Major Import Sources")
+minerals_col<-minerals
+minerals_col
+
+```
+
+
+
+
+```{r}
+str(minerals)
+```
+
+```{r}
+# Extract the specific column
+percentage_column <- minerals_col$`Net import reliance as a percentage of apparent consumption`
+
+# Add a percent sign to the numbers and keep as character
+minerals_col$percentage_with_percent <- ifelse(grepl(">", percentage_column),
+                                                percentage_column,
+                                                paste0(percentage_column, "%"))
+
+minerals_col
+
+
+```
+
+```{r}
+str(minerals_col)
+```
+
+
+
+```{r}
+library(ggplot2)
+
+# Remove percent sign and convert to numeric (handling non-numeric characters)
+minerals_col$percentage_with_percent <- as.numeric(gsub("[^0-9.]", "", minerals_col$percentage_with_percent))
+
+# Reorder Commodity based on percentage_with_percent
+minerals_col$Commodity <- reorder(minerals_col$Commodity, -minerals_col$percentage_with_percent)
+
+# Create a bar graph with percentages inside the bars (vertical text)
+p <- ggplot(minerals_col, aes(x = Commodity, y = percentage_with_percent)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  geom_text(aes(label = paste0(percentage_with_percent, "%")), angle = 90, hjust = 1, size = 2) +  # Place vertical percentages inside the bars
+  labs(title = "Net Import Reliance by Commodity",
+       x = "Commodity",
+       y = "Net Import Reliance (%)") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+# Print the plot
+print(p)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
